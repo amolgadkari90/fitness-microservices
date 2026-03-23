@@ -1,36 +1,43 @@
 # ==============================
 # Spring Boot Application Config
+# (Centralized Configuration - Loaded via Config Server)
 # ==============================
 spring:
-
-  # --------------------------------
-  # Application Identity
-  # --------------------------------
-  application:
-    name: activity-service   # Service name registered in Eureka and used across logs
 
   # --------------------------------
   # MongoDB Configuration
   # --------------------------------
   data:
     mongodb:
+      # MongoDB Atlas connection string
+      # Credentials resolved from 'mongo' section below
       uri: mongodb+srv://${mongo.username}:${mongo.password}@${mongo.cluster}/${mongo.database}?retryWrites=true&w=majority&appName=${spring.application.name}
+
+      # Disable automatic index creation
+      # Recommended for production stability
       auto-index-creation: false
 
   # --------------------------------
   # Apache Kafka Configuration
   # --------------------------------
   kafka:
+    # Kafka broker address (local development)
+    # Replace localhost with container hostname in Docker/K8s
     bootstrap-servers: localhost:9092
 
     producer:
+      # String key serializer (recommended for event keys)
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+      # JSON serializer for sending POJO events
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      # Prevent type metadata headers unless required by consumers
       properties:
         spring.json.add.type.headers: false
 
 # --------------------------------
-# Custom Kafka Properties  ✅ FIXED
+# Custom Kafka Properties
 # --------------------------------
 kafka:
   topic:
@@ -40,29 +47,7 @@ kafka:
 # Mongo Credentials (Externalized)
 # --------------------------------
 mongo:
-  username: ${MONGO_USERNAME}
-  password: ${MONGO_PASSWORD}
-  cluster: ${MONGO_CLUSTER}
-  database: ${MONGO_DATABASE}
-
-# --------------------------------
-# Embedded Server Configuration
-# --------------------------------
-server:
-  port: 8082
-
-# --------------------------------
-# Eureka Service Discovery Config
-# --------------------------------
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-    register-with-eureka: true
-    fetch-registry: true
-
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
+  username: ${MONGO_USERNAME}   # Externalized MongoDB username
+  password: ${MONGO_PASSWORD}   # Externalized MongoDB password
+  cluster: ${MONGO_CLUSTER}     # MongoDB Atlas cluster
+  database: ${MONGO_DATABASE}   # Target database name

@@ -7,56 +7,29 @@ spring:
   # Application Identity
   # --------------------------------
   application:
-    name: activity-service   # Service name registered in Eureka and used across logs
+    name: activity-service   # MUST match config file name in Config Server (activity-service.yml)
 
   # --------------------------------
-  # MongoDB Configuration
+  # Spring Cloud Config Client
   # --------------------------------
-  data:
-    mongodb:
-      uri: mongodb+srv://${mongo.username}:${mongo.password}@${mongo.cluster}/${mongo.database}?retryWrites=true&w=majority&appName=${spring.application.name}
-      auto-index-creation: false
-
-  # --------------------------------
-  # Apache Kafka Configuration
-  # --------------------------------
-  kafka:
-    bootstrap-servers: localhost:9092
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
-
-# --------------------------------
-# Custom Kafka Properties  ✅ FIXED
-# --------------------------------
-kafka:
-  topic:
-    name: activity.events.v1   # Topic used for publishing activity events
-
-# --------------------------------
-# Mongo Credentials (Externalized)
-# --------------------------------
-mongo:
-  username: ${MONGO_USERNAME}
-  password: ${MONGO_PASSWORD}
-  cluster: ${MONGO_CLUSTER}
-  database: ${MONGO_DATABASE}
+  config:
+    # Fetch configuration from Config Server
+    # 'optional:' ensures service still starts if Config Server is unavailable
+    import: optional:configserver:http://localhost:8888
 
 # --------------------------------
 # Embedded Server Configuration
 # --------------------------------
 server:
-  port: 8082
+  port: 8082   # Fallback port (can be overridden by Config Server)
 
 # --------------------------------
-# Eureka Service Discovery Config
+# Eureka Service Discovery Config (Fallback)
 # --------------------------------
 eureka:
   client:
     service-url:
+      # Default Eureka server location (fallback if Config Server is unavailable)
       defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true

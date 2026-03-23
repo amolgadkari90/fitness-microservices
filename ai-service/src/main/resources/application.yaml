@@ -7,82 +7,29 @@ spring:
   # Application Identity
   # --------------------------------------
   application:
-    name: aiservice   # Registered service name in Eureka
+    name: aiservice   # MUST match config file name in Config Server (aiservice.yml)
 
   # --------------------------------------
-  # MongoDB Configuration (Mongo Atlas)
+  # Spring Cloud Config Client
   # --------------------------------------
-  data:
-    mongodb:
-      # MongoDB Atlas connection string
-      # Credentials resolved from 'mongo' section below
-      uri: mongodb+srv://${mongo.username}:${mongo.password}@${mongo.cluster}/${mongo.database}?retryWrites=true&w=majority&appName=${spring.application.name}
-
-      # Disable automatic index creation
-      # Recommended for production stability
-      auto-index-creation: false
-
-  # --------------------------------------
-  # Apache Kafka Configuration (Consumer)
-  # --------------------------------------
-  kafka:
-    # Kafka broker address (local development)
-    # Replace localhost with container hostname in Docker/K8s
-    bootstrap-servers: localhost:9092
-
-    consumer:
-      # Consumer group (shared across AI service instances)
-      group-id: activity-processor-group
-
-      # Must match producer key serializer
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
-      # JSON deserializer for ActivityEvent
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-
-      # Start from earliest offset if no committed offset exists
-      auto-offset-reset: earliest
-
-      properties:
-        # Ignore type headers since producer disabled them
-        spring.json.use.type.headers: false
-
-        # Default target class for deserialization
-        spring.json.value.default.type: com.fitness.events.ActivityEvent
-
-        # Restrict this in production (avoid "*")
-        spring.json.trusted.packages: "*"
-
-    # --------------------------------------
-    # Kafka Listener Configuration
-    # --------------------------------------
-    listener:
-      # Manual acknowledgment mode
-      # Offset committed ONLY after acknowledgment.acknowledge()
-      ack-mode: manual
-
-# --------------------------------------
-# Custom Mongo Credential Properties
-# --------------------------------------
-mongo:
-  username: ${MONGO_USERNAME}
-  password: ${MONGO_PASSWORD}
-  cluster: ${MONGO_CLUSTER}
-  database: ${MONGO_DATABASE}
+  config:
+    # Fetch configuration from Config Server
+    # 'optional:' ensures service still starts if Config Server is unavailable
+    import: optional:configserver:http://localhost:8888
 
 # --------------------------------------
 # Embedded Server Configuration
 # --------------------------------------
 server:
-  port: 8083   # AI service runs on port 8083
+  port: 8083   # Fallback port (can be overridden by Config Server)
 
 # --------------------------------------
-# Eureka Service Discovery Configuration
+# Eureka Service Discovery Configuration (Fallback)
 # --------------------------------------
 eureka:
   client:
     service-url:
-      # Environment override supported
+      # Environment override supported (fallback if Config Server is unavailable)
       defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
 
     register-with-eureka: true
@@ -97,14 +44,3 @@ eureka:
 
     # Remove instance if no heartbeat within 30 seconds
     lease-expiration-duration-in-seconds: 30
-
-# --------------------------------------
-# Custom Gemini url and key Properties
-# --------------------------------------
-# url: ${GEMINI_URL}
-# key: ${GEMINI_KEY}
-#
-# --------------------------------------
-Gemini:
-  url: ${GEMINI_URL}
-  key: ${GEMINI_KEY}

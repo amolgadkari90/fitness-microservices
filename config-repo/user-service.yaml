@@ -1,21 +1,17 @@
 # =========================================
 # Spring Boot Application Configuration
+# (Centralized Configuration - Loaded via Config Server)
 # =========================================
 spring:
-
-  # ---------------------------------
-  # Application Identity
-  # ---------------------------------
-  application:
-    name: user-service   # Service name registered in Eureka
 
   # ---------------------------------
   # MySQL Database Configuration
   # ---------------------------------
   datasource:
-    url: ${DB_URL}              # Externalized DB connection URL
-    username: ${DB_USERNAME}    # Externalized DB username
-    password: ${DB_PASSWORD}    # Externalized DB password
+    # Externalized DB connection details (should come from environment variables)
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # ---------------------------------
@@ -23,8 +19,8 @@ spring:
   # ---------------------------------
   jpa:
     hibernate:
-      ddl-auto: update   # Use 'validate' in production
-    show-sql: true       # Disable in production
+      ddl-auto: update   # Use 'validate' or 'none' in production
+    show-sql: true       # Disable in production for performance
     properties:
       hibernate:
         format_sql: true
@@ -35,7 +31,7 @@ spring:
   # ---------------------------------
   kafka:
     # Kafka broker address (local development)
-    # For Docker/Kubernetes use container hostname instead of localhost
+    # Replace with broker hostname in Docker/Kubernetes environments
     bootstrap-servers: localhost:9092
 
     producer:
@@ -54,26 +50,6 @@ spring:
     # ---------------------------------
     topic:
       name: activity-event   # Topic used for publishing user events
-
-# ---------------------------------
-# Embedded Server Configuration
-# ---------------------------------
-server:
-  port: 8081   # User service runs on port 8081
-
-# ---------------------------------
-# Eureka Service Discovery
-# ---------------------------------
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-    register-with-eureka: true
-    fetch-registry: true
-
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
 
 # ---------------------------------
 # Logging Configuration
