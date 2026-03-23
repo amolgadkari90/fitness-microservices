@@ -1,0 +1,3 @@
+com\fitness\events\ActivityCreatedEventPayload.class
+com\fitness\events\ActivityEvent.class
+com\fitness\events\EventType.class

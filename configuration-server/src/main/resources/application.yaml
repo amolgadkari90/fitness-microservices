@@ -1,0 +1,75 @@
+# ==========================================
+# Spring Cloud Config Server Configuration
+# ==========================================
+spring:
+
+  # --------------------------------------
+  # Application Identity
+  # --------------------------------------
+  application:
+    name: configuration-server   # Service name (used in Eureka and logs)
+
+  # --------------------------------------
+  # Active Profile Configuration
+  # --------------------------------------
+  profiles:
+    active: git   # Use 'git' profile to load configs from remote Git repository
+
+  # --------------------------------------
+  # Config Server Settings
+  # --------------------------------------
+  cloud:
+    config:
+      server:
+        git:
+          # --------------------------------------
+          # Git Repository Configuration
+          # --------------------------------------
+
+          # IMPORTANT:
+          # Config Server expects the ROOT Git repository URL,
+          # NOT a sub-folder path.
+          uri: https://github.com/amolgadkari90/fitness-microservices
+
+          # Default branch to read configurations from
+          default-label: main
+
+          # Folder inside the repository where config files are stored
+          # Example: config-repo/, config/, configs/
+          search-paths: config-repo
+
+          # --------------------------------------
+          # Performance & Reliability
+          # --------------------------------------
+
+          # Clone repository at startup (fail fast if repo is unreachable)
+          clone-on-start: true
+
+          # Timeout for Git operations (in seconds)
+          timeout: 10
+
+          # --------------------------------------
+          # Authentication (if repo is private)
+          # --------------------------------------
+          # Use environment variables for security
+          # username: ${GIT_USERNAME}
+          # password: ${GIT_TOKEN}
+
+# --------------------------------------
+# Embedded Server Configuration
+# --------------------------------------
+server:
+  port: 8888   # Config server runs on port 8888 (default for config servers)
+
+# --------------------------------------
+# Actuator Configuration (Monitoring)
+# --------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info   # Expose minimal endpoints for monitoring
+
+  endpoint:
+    health:
+      show-details: always     # Useful during development (restrict in prod)

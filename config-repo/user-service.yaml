@@ -1,0 +1,87 @@
+# =========================================
+# Spring Boot Application Configuration
+# =========================================
+spring:
+
+  # ---------------------------------
+  # Application Identity
+  # ---------------------------------
+  application:
+    name: user-service   # Service name registered in Eureka
+
+  # ---------------------------------
+  # MySQL Database Configuration
+  # ---------------------------------
+  datasource:
+    url: ${DB_URL}              # Externalized DB connection URL
+    username: ${DB_USERNAME}    # Externalized DB username
+    password: ${DB_PASSWORD}    # Externalized DB password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # ---------------------------------
+  # JPA / Hibernate Configuration
+  # ---------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: update   # Use 'validate' in production
+    show-sql: true       # Disable in production
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # ---------------------------------
+  # Apache Kafka Configuration
+  # ---------------------------------
+  kafka:
+    # Kafka broker address (local development)
+    # For Docker/Kubernetes use container hostname instead of localhost
+    bootstrap-servers: localhost:9092
+
+    producer:
+      # String key serializer (recommended for event keys)
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+      # JSON serializer for sending POJO events
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      # Prevent type metadata headers unless required by consumers
+      properties:
+        spring.json.add.type.headers: false
+
+    # ---------------------------------
+    # Custom Kafka Topic Configuration
+    # ---------------------------------
+    topic:
+      name: activity-event   # Topic used for publishing user events
+
+# ---------------------------------
+# Embedded Server Configuration
+# ---------------------------------
+server:
+  port: 8081   # User service runs on port 8081
+
+# ---------------------------------
+# Eureka Service Discovery
+# ---------------------------------
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# ---------------------------------
+# Logging Configuration
+# ---------------------------------
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+    com.fitness.userservice: DEBUG
