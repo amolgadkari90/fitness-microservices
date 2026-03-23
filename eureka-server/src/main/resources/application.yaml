@@ -1,13 +1,36 @@
+# ==========================================
+# Eureka Server (Config Client Bootstrap Config)
+# ==========================================
 server:
-  port: 8761
+  port: 8761   # Local port (can also be moved to config server later)
 
 spring:
   application:
-    name: eureka-server
+    name: eureka-server   # MUST match config-repo file name
 
+  # ------------------------------------------
+  # Spring Cloud Config Client Configuration
+  # ------------------------------------------
+  config:
+    # Fetch configuration from Config Server
+    import: optional:configserver:http://localhost:8888
+
+  # ------------------------------------------
+  # Disable Spring Auto Service Registration
+  # ------------------------------------------
+  cloud:
+    service-registry:
+      auto-registration:
+        enabled: false   # Prevents Eureka server from attempting self-registration (removes misleading logs)
+
+# ------------------------------------------
+# Minimal fallback Eureka Configuration
+# (Used only if Config Server is unavailable)
+# ------------------------------------------
 eureka:
   client:
-    register-with-eureka: false
-    fetch-registry: false
+    register-with-eureka: false   # Ensure Eureka server does NOT register itself
+    fetch-registry: false         # Do NOT fetch registry (this is the server)
+
   server:
-    wait-time-in-ms-when-sync-empty: 0
+    wait-time-in-ms-when-sync-empty: 0   # Faster startup in dev (no wait for registry sync)
