@@ -3,3 +3,14 @@ eureka:
   service-url:
    defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
    # Environment override supported (fallback if Config Server is unavailable)
+
+#Routing 
+spring:
+ gateway:
+  routes:
+   - id: user-service
+     uri: lb://USER-SERVICE # lb -> load balanced 
+     predicates:
+      - Path=/api/v1/users/** 
+      #User service controller -> @RequestMapping("/api/v1/users")
+      #so any request coming to API-Gateway -> http://localhost:8084/api/v1/users that will map to //USER-SERVICE (host name for user-service)
