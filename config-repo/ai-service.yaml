@@ -67,7 +67,7 @@ mongo:
   username: ${MONGO_USERNAME}   # Externalized MongoDB username
   password: ${MONGO_PASSWORD}   # Externalized MongoDB password
   cluster: ${MONGO_CLUSTER}     # MongoDB Atlas cluster
-  database: ${MONGO_DATABASE}   # Target database name
+  database: ${MONGO_AI_DB}   	# Target database name
 
 # --------------------------------------
 # Custom Gemini url and key Properties

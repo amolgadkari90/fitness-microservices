@@ -7,7 +7,7 @@ spring:
   # Application Identity
   # --------------------------------------
   application:
-    name: aiservice   # MUST match config file name in Config Server (aiservice.yml)
+    name: ai-service   # MUST match config file name in Config Server (aiservice.yml)
 
   # --------------------------------------
   # Spring Cloud Config Client

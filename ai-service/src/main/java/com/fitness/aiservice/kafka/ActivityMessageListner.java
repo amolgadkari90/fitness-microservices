@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.activityaiservice.ActivityAiService;
-//import com.fitness.aiservice.dto.RecomendationRequest;
-//import com.fitness.aiservice.eventregistration.service.EvenRegisterationService;
 import com.fitness.events.ActivityCreatedEventPayload;
 import com.fitness.events.ActivityEvent;
 
@@ -19,51 +17,76 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ActivityMessageListner {
 
-	private final ObjectMapper objectMapper;
-	private final ActivityAiService activityAiService;
-	//private final EvenRegisterationService eventRegisteration;
-	
+    private final ObjectMapper objectMapper;
+    private final ActivityAiService activityAiService;
 
-	@KafkaListener(topics = "activity.events.v1", groupId = "activity-processor-group")
-	public void activityConsumer(ActivityEvent<?> event, Acknowledgment ack) {
+    /**
+     * Kafka Listener
+     *
+     * Now using direct POJO (ActivityEvent) since:
+     * - Kafka JsonDeserializer is properly configured
+     * - Config Server is correctly loading properties
+     * - ack-mode is set to manual
+     */
+    @KafkaListener(topics = "activity.events.v1", groupId = "activity-processor-group")
+    public void activityConsumer(ActivityEvent<?> event, Acknowledgment ack) {
 
-		log.info("ActivityMessageListner.activityConsumer {}", event.eventType());
-		
-		try {
+        log.info("ActivityMessageListner.activityConsumer {}", event.eventType());
 
-	        switch (event.eventType()) {
+        try {
 
-	            case ACTIVITY_CREATED:
+            switch (event.eventType()) {
 
-	                ActivityCreatedEventPayload payload =
-	                        convertPayload(event.payload(), ActivityCreatedEventPayload.class);
+                case ACTIVITY_CREATED:
 
-	                log.info("Processing ACTIVITY_CREATED for activityId {}", payload.activityId());
+                    /**
+                     * Convert generic payload → specific DTO
+                     */
+                    ActivityCreatedEventPayload payload =
+                            convertPayload(event.payload(), ActivityCreatedEventPayload.class);
 
-	                try {
-	                    // Wrap risky logic
-	                    activityAiService.generateRecomendationFromGemini(payload);
+                    log.info("Processing ACTIVITY_CREATED for activityId {}", payload.activityId());
 
-	                } catch (Exception ex) {
-	                    log.error("AI processing failed, skipping", ex);
-	                }
+                    try {
+                        /**
+                         * AI recommendation processing
+                         */
+                        activityAiService.generateRecomendationFromGemini(payload);
 
-	                break;
+                    } catch (Exception ex) {
+                        /**
+                         * Prevent retry loop due to external service failure
+                         */
+                        log.error("AI processing failed, skipping", ex);
+                    }
 
-	            default:
-	                log.warn("Unhandled event type {}", event.eventType());
-	        }
+                    break;
 
-	    } catch (Exception ex) {
-	        log.error("Unexpected error in listener", ex);
+                default:
+                    /**
+                     * Handle unknown event types safely
+                     */
+                    log.warn("Unhandled event type {}", event.eventType());
+            }
 
-	    } finally {
-	        // ALWAYS ACK LAST
-	        ack.acknowledge();
-	    }
-	}
+        } catch (Exception ex) {
+            /**
+             * Catch unexpected runtime issues
+             */
+            log.error("Unexpected error in listener", ex);
 
-	private <T> T convertPayload(Object payload, Class<T> type) {
-		return objectMapper.convertValue(payload, type);
-	}
+        } finally {
+            /**
+             * Manual acknowledgment (critical for offset commit)
+             */
+            ack.acknowledge();
+        }
+    }
+
+    /**
+     * Utility to convert generic payload into typed DTO
+     */
+    private <T> T convertPayload(Object payload, Class<T> type) {
+        return objectMapper.convertValue(payload, type);
+    }
 }
