@@ -33,12 +33,16 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
       # JSON deserializer for ActivityEvent
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      # ✅ Updated to ErrorHandlingDeserializer for reliable delegation
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
 
       # Start from earliest offset if no committed offset exists
       auto-offset-reset: earliest
 
       properties:
+        # ✅ Explicit delegate to JsonDeserializer (fix for Config Server binding issues)
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
         # Ignore type headers since producer disabled them
         spring.json.use.type.headers: false
 

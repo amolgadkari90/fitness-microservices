@@ -9,6 +9,7 @@ target/
 
 # Environment files
 .env
+.env.*
 
 # IDE
 .idea/
