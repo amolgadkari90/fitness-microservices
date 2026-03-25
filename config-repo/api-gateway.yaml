@@ -1,23 +1,44 @@
+server:
+  port: 8084
+
+spring:
+  main:
+    web-application-type: reactive
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://USER-SERVICE   # 🔥 production-ready (Eureka आधारित)
+          predicates:
+            - Path=/api/v1/users/**
+          # Optional future filters
+          # filters:
+          #   - StripPrefix=3
+
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-      # Environment override supported (fallback if Config Server is unavailable)
+    register-with-eureka: true
+    fetch-registry: true
 
-# Routing
-spring:
-  cloud:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway,health,info
+  endpoint:
     gateway:
-      # ✅ Prevent case-sensitivity issues
-      discovery:
-        locator:
-          lower-case-service-id: true
-          
-      routes:
-        - id: user-service
-          uri: lb://user-service # lb -> load balanced user-service
-          predicates:
-            - Path=/api/v1/users/**
-              # User service controller -> @RequestMapping("/api/v1/users")
-              # so any request coming to API-Gateway -> http://localhost:8084/api/v1/users
-              # that will map to USER-SERVICE
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
