@@ -17,14 +17,14 @@ spring:
           #   - StripPrefix=3
         
         - id: activity-service
-          uri: lb://activity-service                 #ACTIVITY-SERVICE
+          uri: lb://ACTIVITY-SERVICE                #ACTIVITY-SERVICE
           predicates:
             - Path=/api/v1/activities/**
           # filters:
           #   - StripPrefix=3
 
         - id: ai-service
-          uri: lb://ai-service                       #AI-SERVICE
+          uri: lb://AI-SERVICE                     #AI-SERVICE
           predicates:
             - Path=/api/v1/recommendations/**
           # filters:
