@@ -9,12 +9,27 @@ spring:
     gateway:
       routes:
         - id: user-service
-          uri: lb://USER-SERVICE   # 🔥 production-ready (Eureka आधारित)
+          uri: lb://USER-SERVICE   # same as http://USER-SERVICE, but with load balancing
           predicates:
             - Path=/api/v1/users/**
           # Optional future filters
           # filters:
           #   - StripPrefix=3
+        
+        - id: activity-service
+          uri: lb://ACTIVITY-SERVICE
+          predicates:
+            - Path=/api/v1/activities/**
+          # filters:
+          #   - StripPrefix=3
+
+        - id: ai-service
+          uri: lb://AI-SERVICE
+          predicates:
+            - Path=/api/v1/recommendations/**
+          # filters:
+          #   - StripPrefix=3
+
 
 eureka:
   client:
