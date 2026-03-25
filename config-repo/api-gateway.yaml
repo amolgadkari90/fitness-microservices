@@ -8,9 +8,14 @@ eureka:
 spring:
   cloud:
     gateway:
+      # ✅ Prevent case-sensitivity issues
+      discovery:
+        locator:
+          lower-case-service-id: true
+          
       routes:
         - id: user-service
-          uri: lb://USER-SERVICE # lb -> load balanced USER-SERVICE
+          uri: lb://user-service # lb -> load balanced user-service
           predicates:
             - Path=/api/v1/users/**
               # User service controller -> @RequestMapping("/api/v1/users")
